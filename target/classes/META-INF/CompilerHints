@@ -1,0 +1,11 @@
+dontinline,*.*_all_jmhStub
+dontinline,*.*_avgt_jmhStub
+dontinline,*.*_sample_jmhStub
+dontinline,*.*_ss_jmhStub
+dontinline,*.*_thrpt_jmhStub
+inline,jpountz/expand16.setup
+inline,jpountz/expand16.testScalarExpand16
+inline,jpountz/expand16.testVectorExpand16
+inline,jpountz/expand8.setup
+inline,jpountz/expand8.testScalarExpand8
+inline,jpountz/expand8.testVectorExpand8
