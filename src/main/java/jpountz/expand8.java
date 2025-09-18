@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 import jdk.incubator.vector.*;
 import org.openjdk.jmh.annotations.*;
 
+import static jdk.incubator.vector.VectorOperators.LSHR;
+
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -20,6 +22,7 @@ public class expand8 {
 
     @Setup(Level.Trial)
     public void setup() {
+        sanityCheck();
         arrScalar = new int[256];
         arrVector = new int[256];
         Random rand = new Random(42);
@@ -52,23 +55,41 @@ public class expand8 {
     }
 
 
-    static final VectorSpecies<Integer> SPECIES = IntVector.SPECIES_256; // 256-bit vectors, 8 ints per vector
+    static final VectorSpecies<Integer> INT_SPECIES = IntVector.SPECIES_256; // 256-bit vectors, 8 ints per vector
 
     static void expand8Vector(int[] arr) {
-        // 256 elements, processed 8 ints at a time
-        for (int i = 0; i < 64; i += SPECIES.length()) {
-            IntVector v = IntVector.fromArray(SPECIES, arr, i);
+        // BLOCK_SIZE is 256
+        for (int i = 0; i < 64; i += INT_SPECIES.length()) {
+            IntVector v = IntVector.fromArray(INT_SPECIES, arr, i);
 
-            // extract 4 bytes per int in parallel
-            IntVector b0 = v.lanewise(VectorOperators.LSHR, 24).and(0xFF);
-            IntVector b1 = v.lanewise(VectorOperators.LSHR, 16).and(0xFF);
-            IntVector b2 = v.lanewise(VectorOperators.LSHR, 8).and(0xFF);
-            IntVector b3 = v.and(0xFF);
-
-            b0.intoArray(arr, i);          // first 64 elements
-            b1.intoArray(arr, 64 + i);     // next 64
-            b2.intoArray(arr, 128 + i);    // next 64
-            b3.intoArray(arr, 192 + i);    // last 64
+            v.lanewise(LSHR, 24).intoArray(arr, i);
+            v.lanewise(LSHR, 16).and(0xFF).intoArray(arr, 64 + i);
+            v.lanewise(LSHR, 8).and(0xFF).intoArray(arr, 128 + i);
+            v.and(0xFF).intoArray(arr, 192 + i);
         }
+    }
+
+    static void sanityCheck() {
+        Random rnd = new Random(42);
+        int[] input = new int[256];
+        for (int i = 0; i < input.length; i++) {
+            input[i] = rnd.nextInt();
+        }
+
+        int[] vectorResult = input.clone();
+        int[] scalarResult = input.clone();
+
+        expand8Vector(vectorResult);
+        expand8(scalarResult);
+
+        for (int i = 0; i < 256; i++) {
+            if (vectorResult[i] != scalarResult[i]) {
+                throw new AssertionError(
+                        "Mismatch at index " + i + ": vector=" + vectorResult[i] +
+                                ", scalar=" + scalarResult[i]);
+            }
+        }
+
+        System.out.println("Sanity check passed: vectorized result matches scalar.");
     }
 }
