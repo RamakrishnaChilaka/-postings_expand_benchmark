@@ -3,6 +3,15 @@ dontinline,*.*_avgt_jmhStub
 dontinline,*.*_sample_jmhStub
 dontinline,*.*_ss_jmhStub
 dontinline,*.*_thrpt_jmhStub
+inline,jpountz/NibblePackBenchmark.scalarPack
+inline,jpountz/NibblePackBenchmark.setup
+inline,jpountz/NibblePackBenchmark.vectorPack
+inline,jpountz/collapse16.setup
+inline,jpountz/collapse16.testScalarCollapse16
+inline,jpountz/collapse16.testVectorCollapse16
+inline,jpountz/collapse8.setup
+inline,jpountz/collapse8.testScalarCollapse8
+inline,jpountz/collapse8.testVectorCollapse8
 inline,jpountz/expand16.setup
 inline,jpountz/expand16.testScalarExpand16
 inline,jpountz/expand16.testVectorExpand16
